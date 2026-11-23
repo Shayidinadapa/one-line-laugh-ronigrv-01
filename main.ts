@@ -18,16 +18,22 @@ const OUT_DIR = process.env.OUTPUT_DIR ?? "/output";
 const OUT_PATH = join(OUT_DIR, "entry.txt");
 
 function validate(line: string): void {
+  // Collect every violated rule first so a bad line reports all of its
+  // problems at once instead of failing on whichever check runs first.
+  const problems: string[] = [];
   if (line.length < 1 || line.length > 200) {
-    throw new Error(
-      `entry must be 1-200 characters, got ${line.length}`,
+    problems.push(
+      `length ${line.length} is outside the 1-200 character range`,
     );
   }
   if (line.trim().length === 0) {
-    throw new Error("entry must not be only whitespace");
+    problems.push("entry is only whitespace");
   }
   if (/[\r\n]/.test(line)) {
-    throw new Error("entry must be a single line (no newline characters)");
+    problems.push("entry contains a newline character");
+  }
+  if (problems.length > 0) {
+    throw new Error(`invalid entry: ${problems.join("; ")}`);
   }
 }
 
